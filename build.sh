@@ -1,8 +1,6 @@
 #!/bin/bash
 
-rom_fp="$(date +%y%m%d)"
 originFolder="$(dirname "$(readlink -f -- "$0")")"
-mkdir -p release/$rom_fp/
 set -e
 
 if [ -z "$USER" ];then
@@ -21,7 +19,7 @@ repo sync -c -j 1 --force-sync || repo sync -c -j1 --force-sync
 
 mkdir -p release
 
-repo manifest -r > release/$rom_fp/manifest.xml
+repo manifest -r > release/manifest.xml
 if [ "$module" = art ];then
     pkg=com.android.art
     bash art/build/build-art-module.sh

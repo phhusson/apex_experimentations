@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if [ "$#" -ne 1 ];then
-	echo "Usage: $0 <android-9.0|android-8.1>"
-	exit 1
-fi
-
 set -ex
 
 cleanup() {
