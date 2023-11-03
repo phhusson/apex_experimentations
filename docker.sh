@@ -27,7 +27,7 @@ name="phh-treble-$suffix"
 
 echo "Running build on $name"
 
-docker run -v /nvme1/docker-build:/build-dir --privileged --name "$name" --rm -d ubuntu:20.04 sleep infinity
+docker run -v /nvme1/docker-build:/build-dir -v /nvme2/AOSP-Mirror:/git --privileged --name "$name" --rm -d ubuntu:20.04 sleep infinity
 
 docker exec "$name" echo "Good morning, now building"
 
@@ -76,9 +76,9 @@ run_script '
 
 run_script 'curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash ; apt install git-lfs; git lfs install'
 
-run_script 'git clone https://github.com/phhusson/apex_experimentations'
+run_script 'mkdir /apex_experimentations'
 
-run_script 'echo >> /etc/hosts ; echo 84.38.177.154 git.rip >> /etc/hosts'
+docker cp build.sh "$name":/apex_experimentations/build.sh
 
 run_script '\
 	mkdir -p build-dir && \
@@ -86,7 +86,13 @@ run_script '\
     sed -E -i "s/(make.*)-j8/\1-j24/g" apex_experimentations/build.sh
 	'
 
-run_script "cd build-dir && bash ../apex_experimentations/build.sh $*"
+if [ -f "$GITCOOKIES" ];then
+    docker cp "$GITCOOKIES" "$name":/.gitcookies
+    run_script 'git config --global http.cookiefile /.gitcookies'
+fi
+
+run_script "cd build-dir && REPO_MIRROR_LOCATION=/git bash ../apex_experimentations/build.sh $*"
+
 
 docker cp "$name:"/build-dir/release release
 
